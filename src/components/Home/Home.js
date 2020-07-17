@@ -23,6 +23,22 @@ export default class Home extends Component {
 		this.fetchItems(endpoint);
 	}
 
+	searchItems = (seachTerm) => {
+		let endpoint = '';
+		this.setState({
+			movies: [],
+			loading: true,
+			seachTerm
+		});
+
+		if (seachTerm === '') {
+			endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-us&page=1`;
+		} else {
+			endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-us&query=${seachTerm}`;
+		}
+		this.fetchItems(endpoint);
+	};
+
 	loadMoreItems = () => {
 		let endPoint = '';
 		this.setState({ loading: true });
@@ -51,8 +67,17 @@ export default class Home extends Component {
 	render() {
 		return (
 			<div className="rmdb-home">
-				<HeroImage />
-				<SearchBar />
+				{this.state.heroImage ? (
+					<div>
+						<HeroImage
+							image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${this.state.heroImage.backdrop_path}`}
+							title={this.state.heroImage.original_title}
+							text={this.state.heroImage.overview}
+						/>
+
+						<SearchBar callback={this.searchItems} />
+					</div>
+				) : null}
 				<FourColorGrid />
 				<Spinner />
 				<LoadMoreBtn />
