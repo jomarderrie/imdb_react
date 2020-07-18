@@ -6,47 +6,61 @@ import MovieInfoBar from '../elements/MovieInfoBar/MovieInfoBar';
 import FourColGrid from '../elements/FourColGrid/FourColGrid';
 import Actor from '../elements/Actor/Actor';
 import Spinner from '../elements/Spinner/Spinner';
+import PropTypes from 'prop-types';
 import './Movie.css';
 
 export default class Movie extends Component {
 	state = {
 		movie: null,
 		actors: null,
-		direcotrs: [],
+		directors: [],
 		loading: false
 	};
 
 	componentDidMount() {
-		this.setState({ loading: true });
-
-		const endpoint = `${API_URL}movie/${this.props.match.params.movieId}?api_key=${API_KEY}&language=en-US`;
-		this.fetchItems(endpoint);
+		if (localStorage.getItem(`${this.props.match.params.movieId}`)) {
+			const state = JSON.parse(localStorage.getItem(`${this.props.match.params.movieId}`));
+			this.setState({ ...state });
+		} else {
+			this.setState({ loading: true });
+			// First fetch the movie ...
+			const endpoint = `${API_URL}movie/${this.props.match.params.movieId}?api_key=${API_KEY}&language=en-US`;
+			this.fetchItems(endpoint);
+		}
 	}
-
-	fetchItems = (endPoint) => {
-		fetch(endPoint)
+	fetchItems = (endpoint) => {
+		fetch(endpoint)
 			.then((result) => result.json())
 			.then((result) => {
 				if (result.status_code) {
 					this.setState({ loading: false });
 				} else {
 					this.setState({ movie: result }, () => {
-						const endpoint = `${API_URL}movie/${this.props.match.params.movieId}/credits?api_key={API_KEY}`;
-						fetch(endPoint).then((result) => result.json()).then((result) => {
+						// ... then fetch actors in the setState callback function
+						const endpoint = `${API_URL}movie/${this.props.match.params
+							.movieId}/credits?api_key=${API_KEY}`;
+						fetch(endpoint).then((result) => result.json()).then((result) => {
 							const directors = result.crew.filter((member) => member.job === 'Director');
 
-							this.setState({
-								actors: result.cast,
-								directors,
-								loading: false
-							});
+							this.setState(
+								{
+									actors: result.cast,
+									directors,
+									loading: false
+								},
+								() => {
+									localStorage.setItem(
+										`${this.props.match.params.movieId}`,
+										JSON.stringify(this.state)
+									);
+								}
+							);
 						});
 					});
 				}
 			})
 			.catch((error) => console.error('Error:', error));
 	};
-
 	render() {
 		return (
 			<div className="rmdb-movie">
