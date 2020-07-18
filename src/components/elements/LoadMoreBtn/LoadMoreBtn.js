@@ -1,8 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
+import './LoadMoreBtn.css';
 
 function LoadMoreBtn(props) {
-	return <div>Load more</div>;
+	return (
+		<div className="rmdb-loadmorebtn" onClick={props.onClick}>
+			<p>{props.text}</p>
+		</div>
+	);
 }
 
 LoadMoreBtn.propTypes = {};
